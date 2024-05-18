@@ -7,7 +7,9 @@ import 'package:movie_catalog/core/constants/api_endpoints.dart';
 import 'package:movie_catalog/core/constants/app_colors.dart';
 import 'package:movie_catalog/core/constants/text_styles.dart';
 import 'package:movie_catalog/core/helper/string_helper.dart';
+import 'package:movie_catalog/core/resource/widgets/primary_button.dart';
 import 'package:movie_catalog/features/details/controller/movie_details_controller.dart';
+import 'package:movie_catalog/features/home/controller%20/home_controller.dart';
 
 class MovieDetails extends StatelessWidget {
   const MovieDetails({super.key});
@@ -15,6 +17,7 @@ class MovieDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final movieDetailsController = Get.put(MovieDetailsController());
+    HomeController homeController = Get.find();
     return Scaffold(
       backgroundColor: AppColors.backGroundColor,
       body: SingleChildScrollView(
@@ -31,8 +34,8 @@ class MovieDetails extends StatelessWidget {
                       width: double.maxFinite,
                       child: CachedNetworkImage(
                         imageUrl: ApiEndPoints.imageUrl +
-                            movieDetailsController
-                                .movieDetailsModel!.posterPath.toString(),
+                            movieDetailsController.movieDetailsModel!.posterPath
+                                .toString(),
                         //+ movies.posterPath,
                         fadeInCurve: Curves.bounceOut,
                         fadeInDuration: const Duration(seconds: 1),
@@ -248,7 +251,37 @@ class MovieDetails extends StatelessWidget {
                           },
                           itemCount: movieDetailsController.casts.length),
                     ),
-                    const SizedBox(height: 40,)
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: PrimaryButton(
+                          onPressed: () {
+                            if(homeController.currentIndex.value == 1){
+                              homeController.deleteMovie( movieDetailsController
+                                  .movieDetailsModel!.id);
+
+                            }else{
+                              homeController.addMovie(
+                                  title: movieDetailsController
+                                      .movieDetailsModel!.title,
+                                  url: movieDetailsController
+                                      .movieDetailsModel!.posterPath,
+                                  id: movieDetailsController
+                                      .movieDetailsModel!.id);
+                            }
+
+                          },
+                          buttonNameWidget: Text(
+                            homeController.currentIndex.value == 1?'Delete Favourite':      'Add to Favourite',
+                            style: AppTextStyle.labelLarge
+                                .copyWith(color: AppColors.white),
+                          )),
+                    ),
+                    const SizedBox(
+                      height: 40,
+                    ),
                   ],
                 ),
         ),

@@ -5,6 +5,8 @@ import 'package:movie_catalog/config/network_service/network_service.dart';
 import 'package:movie_catalog/core/constants/api_endpoints.dart';
 import 'package:movie_catalog/core/helper/debouncer.dart';
 import 'package:movie_catalog/core/helper/logger.dart';
+import 'package:movie_catalog/core/resource/local_storage/local_storage.dart';
+import 'package:movie_catalog/features/home/data/movie_store.dart';
 import 'package:movie_catalog/features/home/data/popular_movie_model.dart';
 
 class HomeController extends GetxController {
@@ -12,14 +14,21 @@ class HomeController extends GetxController {
   var typing = false.obs;
   var popularMovie = <Movies>[].obs;
   var searchMovie = <Movies>[].obs;
+  var favouriteMovies = <MovieData>[].obs;
   final searchController = TextEditingController();
   final Debouncer debouncer = Debouncer(milliseconds: 300);
   HttpService httpService = HttpService();
+  final  localStorage = LocalStorage();
+  var currentIndex = 0.obs;
+  final PageController controller = PageController(
+    initialPage: 0,
+  );
 
   @override
   void onInit() {
     super.onInit();
     httpService.init();
+    fetchFavouriteMovies();
     getPopularMovies();
   }
 
@@ -80,4 +89,46 @@ class HomeController extends GetxController {
       isLoading(false);
     }
   }
+
+
+
+
+
+  void fetchFavouriteMovies() async{
+    final allTask = await localStorage.getMovies();
+    favouriteMovies.assignAll(allTask);
+
+  }
+
+
+
+  void addMovie(
+      {
+        required String title,
+        required String url,
+        required int id
+
+      }) {
+
+    MovieData data = MovieData(
+      id: id,
+      title: title,
+
+      url: url,
+    );
+    favouriteMovies.add(data);
+    localStorage.insertMovie(data);
+
+    Get.back();
+    Get.snackbar('Success', "Your Movie added successfully");
+  }
+
+  void deleteMovie(int id){
+    localStorage.deleteMovie(id);
+    favouriteMovies.removeWhere((task) => task.id == id);
+
+    Get.back();
+    Get.snackbar('Success', 'Task deleted');
+  }
+
 }
