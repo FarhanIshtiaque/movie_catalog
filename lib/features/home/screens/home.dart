@@ -36,9 +36,36 @@ class Home extends StatelessWidget {
               const SizedBox(
                 height: 16,
               ),
-              const PrimaryTextField(
-                hintText: 'Search here...',
-                prefixIcon: HeroIcon(HeroIcons.magnifyingGlass),
+              Obx(
+                () => PrimaryTextField(
+                  hintText: 'Search here...',
+                  controller: homeController.searchController,
+                  prefixIcon: const HeroIcon(HeroIcons.magnifyingGlass),
+                  suffixIcon: GestureDetector(
+                    onTap: () {
+                      homeController.typing(false);
+                      homeController.searchController.clear();
+                    },
+                    child: HeroIcon(
+                      HeroIcons.xCircle,
+                      color: homeController.typing.value
+                          ? AppColors.white
+                          : AppColors.textFieldColor,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      homeController.typing(true);
+                    } else {
+                      homeController.typing(false);
+                    }
+                    homeController.debouncer.run(() {
+                      // Your search logic or API call here
+                      homeController.getSearchMovies(query: value.toLowerCase());
+                    });
+
+                  },
+                ),
               ),
               Obx(
                 () => homeController.isLoading.value
@@ -46,26 +73,62 @@ class Home extends StatelessWidget {
                         child: SizedBox(
                             height: 35, child: CircularProgressIndicator()),
                       )
-                    : GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(vertical: 24),
-                        shrinkWrap: true,
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                                maxCrossAxisExtent: 200,
-                                childAspectRatio: .64,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8),
-                        itemCount: homeController.popularMovie.length,
-                        itemBuilder: (BuildContext ctx, index) {
-                          return MovieTile(
-
-                            movies:   homeController.popularMovie[index],
-                           onTap:    (){
-                              Get.toNamed(Routes.MOVIEDETAILS,arguments:homeController.popularMovie[index].id );
-                           }
-                          );
-                        }),
+                    : homeController.typing.value
+                        ? homeController.searchMovie.isEmpty
+                            ? Column(
+                                children: [
+                                  const SizedBox(
+                                    height: 16,
+                                  ),
+                                  Text(
+                                    'No movies with this name',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyle.bodyLarge.copyWith(color: AppColors.gray400),
+                                  )
+                                ],
+                              )
+                            : GridView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 24),
+                                shrinkWrap: true,
+                                gridDelegate:
+                                    const SliverGridDelegateWithMaxCrossAxisExtent(
+                                        maxCrossAxisExtent: 200,
+                                        childAspectRatio: .64,
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8),
+                                itemCount: homeController.searchMovie.length,
+                                itemBuilder: (BuildContext ctx, index) {
+                                  return MovieTile(
+                                      movies: homeController.searchMovie[index],
+                                      onTap: () {
+                                        Get.toNamed(Routes.MOVIEDETAILS,
+                                            arguments: homeController
+                                                .searchMovie[index].id);
+                                      });
+                                })
+                        : GridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            shrinkWrap: true,
+                            gridDelegate:
+                                const SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: 200,
+                                    childAspectRatio: .64,
+                                    crossAxisSpacing: 8,
+                                    mainAxisSpacing: 8),
+                            itemCount: homeController.popularMovie.length,
+                            itemBuilder: (BuildContext ctx, index) {
+                              return MovieTile(
+                                  movies: homeController.popularMovie[index],
+                                  onTap: () {
+                                    Get.toNamed(Routes.MOVIEDETAILS,
+                                        arguments: homeController
+                                            .popularMovie[index].id);
+                                  });
+                            }),
               )
             ],
           ),
@@ -76,10 +139,11 @@ class Home extends StatelessWidget {
 }
 
 class MovieTile extends StatelessWidget {
-
   const MovieTile({required this.movies, this.onTap});
+
   final Movies movies;
   final GestureTapCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -91,7 +155,7 @@ class MovieTile extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(14),
               child: CachedNetworkImage(
-                imageUrl: ApiEndPoints.imageUrl + movies.posterPath,
+                imageUrl: ApiEndPoints.imageUrl + movies.posterPath.toString(),
                 fadeInCurve: Curves.bounceOut,
                 fadeInDuration: const Duration(seconds: 1),
                 fit: BoxFit.cover,

@@ -1,27 +1,21 @@
 class MovieDetailsModel {
   bool adult;
   String backdropPath;
-
   List<Genre> genres;
   String homepage;
   int id;
-
   String originalTitle;
   String overview;
   double popularity;
   String posterPath;
-
   DateTime releaseDate;
   int revenue;
   int runtime;
-
   String status;
   String tagline;
   String title;
-
   double voteAverage;
   int voteCount;
-
   MovieDetailsModel({
     required this.adult,
     required this.backdropPath,

@@ -247,7 +247,8 @@ class MovieDetails extends StatelessWidget {
                             );
                           },
                           itemCount: movieDetailsController.casts.length),
-                    )
+                    ),
+                    const SizedBox(height: 40,)
                   ],
                 ),
         ),
