@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
 import 'package:movie_catalog/core/constants/app_colors.dart';
-import 'package:movie_catalog/features/details/screen/movie_details.dart';
 import 'package:movie_catalog/features/home/controller%20/home_controller.dart';
 import 'package:movie_catalog/features/home/screens/favourite_list.dart';
 import 'package:movie_catalog/features/home/screens/movie_list.dart';
